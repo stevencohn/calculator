@@ -54,7 +54,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 		/// <param name="html"></param>
 		public void Reset(string text)
 		{
-			Text = text ?? String.Empty;
+			Text = text ?? string.Empty;
 			Position = 0;
 		}
 
@@ -210,7 +210,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 		/// </summary>
 		public void MovePastWhitespace()
 		{
-			while (Char.IsWhiteSpace(Peek()))
+			while (char.IsWhiteSpace(Peek()))
 				MoveAhead();
 		}
 	}

@@ -19,6 +19,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Text.RegularExpressions;
 
 
 	/// <summary>
@@ -212,13 +213,6 @@ namespace River.OneMoreAddIn.Commands.Formula
 						// found parameter list, evaluate function
 						result = EvaluateFunction(parser, temp, symbolPos);
 					}
-					else if (parser.Peek() == ':')
-					{
-						// found cell range
-						parser.MoveAhead();
-						result = -1;
-
-					}
 					else
 					{
 						// no parameter list, evaluate symbol (variable)
@@ -257,7 +251,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 		{
 			bool hasDecimal = false;
 			int start = parser.Position;
-			while (Char.IsDigit(parser.Peek()) || parser.Peek() == '.')
+			while (char.IsDigit(parser.Peek()) || parser.Peek() == '.')
 			{
 				if (parser.Peek() == '.')
 				{
@@ -357,24 +351,36 @@ namespace River.OneMoreAddIn.Commands.Formula
 			{
 				// Parse function parameter list
 				int paramStart = parser.Position;
-				int parenCount = 1;
+				int pardepth = 1;
 
 				while (!parser.EndOfText)
 				{
-					if (parser.Peek() == ',')
+					if (parser.Peek() == ':')
+					{
+						// assume current token and next token are cell references
+						var p1 = parser.Position;
+						var cell1 = parser.Extract(paramStart, parser.Position);
+						parser.MoveAhead();
+						var p2 = parser.Position;
+						var cell2 = ParseSymbolToken(parser);
+						paramStart = parser.Position;
+						parameters.AddRange(EvaluateCellReferences(cell1, cell2, p1, p2));
+					}
+					else if (parser.Peek() == ',')
 					{
 						// Note: Ignore commas inside parentheses. They could be
 						// from a parameter list for a function inside the parameters
-						if (parenCount == 1)
+						if (pardepth == 1)
 						{
 							parameters.Add(EvaluateParameter(parser, paramStart));
 							paramStart = parser.Position + 1;
 						}
 					}
+
 					if (parser.Peek() == ')')
 					{
-						parenCount--;
-						if (parenCount == 0)
+						pardepth--;
+						if (pardepth == 0)
 						{
 							parameters.Add(EvaluateParameter(parser, paramStart));
 							break;
@@ -382,7 +388,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 					}
 					else if (parser.Peek() == '(')
 					{
-						parenCount++;
+						pardepth++;
 					}
 					parser.MoveAhead();
 				}
@@ -395,6 +401,78 @@ namespace River.OneMoreAddIn.Commands.Formula
 			// Return parameter list
 			return parameters;
 		}
+
+
+		private List<double> EvaluateCellReferences(string cell1, string cell2, int p1, int p2)
+		{
+			var pattern = @"^([a-z]{1,3})([0-9]{1,3})$";
+
+			var match = Regex.Match(cell1, pattern);
+			if (!match.Success)
+				throw new FormulaException(ErrUndefinedSymbol, p1);
+
+			var col1 = match.Groups[1].Value;
+			var row1 = match.Groups[2].Value;
+
+			match = Regex.Match(cell2, pattern);
+			if (!match.Success)
+				throw new FormulaException(ErrUndefinedSymbol, p2);
+
+			var col2 = match.Groups[1].Value;
+			var row2 = match.Groups[2].Value;
+
+			var values = new List<double>();
+			if (col1 == col2)
+			{
+				// iterate rows in column
+				for (var row = int.Parse(row1); row <= int.Parse(row2); row++)
+				{
+					values.Add(EvaluateSymbol($"{col1}{row}", p1));
+				}
+			}
+			else if (row1 == row2)
+			{
+				// iterate columns in row
+				for (var col = CellLettersToIndex(col1); col <= CellLettersToIndex(col2); col++)
+				{
+					values.Add(EvaluateSymbol($"{CellIndexToLetters(col)}{row1}", p1));
+				}
+			}
+			else
+				throw new FormatException("Cell range must be within one column or within one row");
+
+			return values;
+		}
+
+		private static string CellIndexToLetters(int index)
+		{
+			int div = index;
+			string letters = string.Empty;
+			int mod;
+
+			while (div > 0)
+			{
+				mod = (div - 1) % 26;
+				letters = (char)(65 + mod) + letters;
+				div = ((div - mod) / 26);
+			}
+			return letters;
+		}
+
+		private static int CellLettersToIndex(string letters)
+		{
+			letters = letters.ToUpper();
+			int sum = 0;
+
+			for (int i = 0; i < letters.Length; i++)
+			{
+				sum *= 26;
+				sum += (letters[i] - 'A' + 1);
+			}
+			return sum;
+		}
+
+
 
 		/// <summary>
 		/// Extracts and evaluates a function parameter and returns its value. If an
@@ -477,7 +555,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 			foreach (string token in tokens)
 			{
 				// Is this a value token?
-				int count = token.Count(c => Char.IsDigit(c) || c == '.');
+				int count = token.Count(c => char.IsDigit(c) || c == '.');
 				if (count == token.Length)
 				{
 					stack.Push(double.Parse(token));
