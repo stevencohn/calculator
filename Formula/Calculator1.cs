@@ -382,7 +382,10 @@ namespace River.OneMoreAddIn.Commands.Formula
 						pardepth--;
 						if (pardepth == 0)
 						{
-							parameters.Add(EvaluateParameter(parser, paramStart));
+							if (paramStart < parser.Position)
+							{
+								parameters.Add(EvaluateParameter(parser, paramStart));
+							}
 							break;
 						}
 					}
