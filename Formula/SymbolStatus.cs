@@ -11,6 +11,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 	internal enum SymbolStatus
 	{
 		OK,
+		None,
 		UndefinedSymbol,
 	}
 }

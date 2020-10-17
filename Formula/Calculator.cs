@@ -20,6 +20,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text.RegularExpressions;
+	using System.Windows.Forms;
 
 
 	/// <summary>
@@ -218,6 +219,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 						// no parameter list, evaluate symbol (variable)
 						result = EvaluateSymbol(temp, symbolPos);
 					}
+
 					// handle negative result
 					if (result < 0)
 					{
@@ -430,7 +432,11 @@ namespace River.OneMoreAddIn.Commands.Formula
 				// iterate rows in column
 				for (var row = int.Parse(row1); row <= int.Parse(row2); row++)
 				{
-					values.Add(EvaluateSymbol($"{col1}{row}", p1));
+					var value = EvaluateSymbol($"{col1}{row}", p1);
+					if (!double.IsNaN(value))
+					{
+						values.Add(value);
+					}
 				}
 			}
 			else if (row1 == row2)
@@ -541,6 +547,9 @@ namespace River.OneMoreAddIn.Commands.Formula
 
 			if (status == SymbolStatus.UndefinedSymbol)
 				throw new FormulaException(string.Format(ErrUndefinedSymbol, name), pos);
+
+			if (status == SymbolStatus.None)
+				result = 0;
 
 			return result;
 		}

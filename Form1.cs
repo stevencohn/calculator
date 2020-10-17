@@ -22,6 +22,7 @@ namespace TestEval
 		public Form1()
 		{
 			InitializeComponent();
+			txtExpression.Focus();
 		}
 
 		private void btnEvaluate_Click(object sender, EventArgs e)
@@ -67,7 +68,8 @@ namespace TestEval
 					break;
 
 				case "a3":
-					e.Result = 37;
+					e.Result = double.NaN;
+					e.Status = SymbolStatus.None;
 					break;
 
 				default:
