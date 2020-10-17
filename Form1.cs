@@ -29,7 +29,7 @@ namespace TestEval
 			try
 			{
 				// Evaluate the current expression
-				var calculator = new Calculator1();
+				var calculator = new Calculator();
 				calculator.ProcessSymbol += ProcessSymbol;
 				calculator.ProcessFunction += ProcessFunction;
 				txtResult.Text = calculator.Execute(txtExpression.Text).ToString();

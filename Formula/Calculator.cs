@@ -25,7 +25,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 	/// <summary>
 	/// Expression evaluator
 	/// </summary>
-	internal class Calculator1
+	internal class Calculator
 	{
 		// event handers
 		public delegate void ProcessSymbolHandler(object sender, SymbolEventArgs e);
@@ -63,7 +63,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 		/// <summary>
 		/// Initialize a new instance
 		/// </summary>
-		public Calculator1()
+		public Calculator()
 		{
 		}
 
@@ -412,14 +412,14 @@ namespace River.OneMoreAddIn.Commands.Formula
 
 			var match = Regex.Match(cell1, pattern);
 			if (!match.Success)
-				throw new FormulaException(ErrUndefinedSymbol, p1);
+				throw new FormulaException(string.Format(ErrUndefinedSymbol, cell1), p1);
 
 			var col1 = match.Groups[1].Value;
 			var row1 = match.Groups[2].Value;
 
 			match = Regex.Match(cell2, pattern);
 			if (!match.Success)
-				throw new FormulaException(ErrUndefinedSymbol, p2);
+				throw new FormulaException(string.Format(ErrUndefinedSymbol, cell2), p2);
 
 			var col2 = match.Groups[1].Value;
 			var row2 = match.Groups[2].Value;
