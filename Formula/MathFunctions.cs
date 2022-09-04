@@ -32,8 +32,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	{
 		private static readonly List<MathFunction> functions = new List<MathFunction>();
 		private static readonly ParameterType D = ParameterType.Double;
-		private static readonly ParameterType B = ParameterType.Boolean;
-		private static readonly ParameterType S = ParameterType.String;
+		//private static readonly ParameterType B = ParameterType.Boolean;
+		//private static readonly ParameterType S = ParameterType.String;
 
 		static MathFunctions()
 		{
@@ -42,7 +42,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			functions.Add(new MathFunction("asin", (p) => Math.Asin(p.Match(D)[0])));
 			functions.Add(new MathFunction("atan", (p) => Math.Atan(p.Match(D)[0])));
 			functions.Add(new MathFunction("atan2", (p) => Math.Atan2(p.Match(D, D)[0], p[1])));
-			functions.Add(new MathFunction("average", (p) => Average(p.Match(D, D).ToDubleArray())));
+			functions.Add(new MathFunction("average", (p) => Average(p.Match(D, D).ToDoubleArray())));
 			functions.Add(new MathFunction("ceiling", (p) => Math.Ceiling(p.Match(D, D)[0])));
 			functions.Add(new MathFunction("cos", (p) => Math.Cos(p.Match(D)[0])));
 			functions.Add(new MathFunction("cosh", (p) => Math.Cosh(p.Match(D)[0])));
@@ -51,23 +51,23 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			functions.Add(new MathFunction("floor", (p) => Math.Floor(p.Match(D)[0])));
 			functions.Add(new MathFunction("log", (p) => Math.Log(p.Match(D)[0])));
 			functions.Add(new MathFunction("log10", (p) => Math.Log10(p.Match(D)[0])));
-			functions.Add(new MathFunction("max", (p) => Max(p.Match(D).ToDubleArray())));
-			functions.Add(new MathFunction("median", (p) => Median(p.Match(D).ToDubleArray())));
-			functions.Add(new MathFunction("min", (p) => Min(p.Match(D).ToDubleArray())));
-			functions.Add(new MathFunction("mode", (p) => Mode(p.Match(D).ToDubleArray())));
+			functions.Add(new MathFunction("max", (p) => Max(p.Match(D).ToDoubleArray())));
+			functions.Add(new MathFunction("median", (p) => Median(p.Match(D).ToDoubleArray())));
+			functions.Add(new MathFunction("min", (p) => Min(p.Match(D).ToDoubleArray())));
+			functions.Add(new MathFunction("mode", (p) => Mode(p.Match(D).ToDoubleArray())));
 			functions.Add(new MathFunction("pow", (p) => Math.Pow(p.Match(D, D)[0], p[1])));
-			functions.Add(new MathFunction("range", (p) => Range(p.Match(D).ToDubleArray())));
+			functions.Add(new MathFunction("range", (p) => Range(p.Match(D).ToDoubleArray())));
 			functions.Add(new MathFunction("round", (p) => Math.Round(p.Match(D)[0])));
 			functions.Add(new MathFunction("sign", (p) => Math.Sign(p.Match(D)[0])));
 			functions.Add(new MathFunction("sin", (p) => Math.Sin(p.Match(D)[0])));
 			functions.Add(new MathFunction("sinh", (p) => Math.Sinh(p.Match(D)[0])));
 			functions.Add(new MathFunction("sqrt", (p) => Math.Sqrt(p.Match(D)[0])));
-			functions.Add(new MathFunction("stdev", (p) => StandardDeviation(p.Match(D).ToDubleArray())));
-			functions.Add(new MathFunction("sum", (p) => Sum(p.Match(D).ToDubleArray())));
+			functions.Add(new MathFunction("stdev", (p) => StandardDeviation(p.Match(D).ToDoubleArray())));
+			functions.Add(new MathFunction("sum", (p) => Sum(p.Match(D).ToDoubleArray())));
 			functions.Add(new MathFunction("tan", (p) => Math.Tan(p.Match(D)[0])));
 			functions.Add(new MathFunction("tanh", (p) => Math.Tanh(p.Match(D)[0])));
 			functions.Add(new MathFunction("trunc", (p) => Math.Truncate(p.Match(D)[0])));
-			functions.Add(new MathFunction("variance", (p) => Variance(p.Match(D).ToDubleArray())));
+			functions.Add(new MathFunction("variance", (p) => Variance(p.Match(D).ToDoubleArray())));
 		}
 
 
@@ -91,34 +91,30 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		private static double CountIf(FunctionParameters p)
 		{
 			if (p.Count < 2)
-				throw new FormulaException($"CountIf requires at least two parameters");
+				throw new FormulaException($"countif requires at least two parameters");
 
-			var a = p.ToArray();
-			var last = a[a.Length - 1];
+			var array = p.ToArray();
+			var a = array.Take(p.Count - 1).ToArray();
+			var last = array[array.Length - 1];
 
 			var op = ((string)last.Value)[0];
 
-			var test = ("<>!".Contains(op)
-				? ((string)last.Value).Substring(1)
-				: (string)last.Value)
-				.Cast<double>().First();
-
-			if (last.Type == ParameterType.Boolean)
+			if ("<>!".Contains(op))
 			{
-				return a.Count(v => v.Type == ParameterType.Boolean && (bool)v.Value);
-			}
-			else if (last.Type == ParameterType.String)
-			{
-				switch (op)
+				var test = new FunctionParameter(((string)last.Value).Substring(1));
+				if (test.Type != ParameterType.Double)
 				{
-					case '<': return a.Count(v => v.Type == ParameterType.Double && (double)v.Value < test);
-					case '>': return a.Count(v => v.Type == ParameterType.Double && (double)v.Value > test);
-					case '!': return a.Count(v => v.Type == ParameterType.Double && (double)v.Value != test);
-					default: return a.Count(v => v.Type == ParameterType.Double && (double)v.Value == test);
+					throw new FormulaException($"countif test parameter has invalid operator");
 				}
+
+				var result = 0;
+				if (op == '>') result = 1;
+				else if (op == '<' || op == '!') result = -1;
+
+				return a.Count(v => v.Compare(test) == result);
 			}
 
-			throw new FormulaException($"CountIf parameters {a.Length - 1} is not a bool or string");
+			return a.Count(v => v.Compare(last) == 0);
 		}
 
 

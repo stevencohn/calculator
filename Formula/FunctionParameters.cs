@@ -42,7 +42,33 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			}
 
 			throw new FormulaException($"{value} ({value.GetType()}) Must be bool, double, or string");
-		}		
+		}
+
+		public int Compare(FunctionParameter template)
+		{
+			if (template.Type == Type)
+			{
+				switch (template.Type)
+				{
+					case ParameterType.Boolean:
+						return (bool)template.Value == (bool)Value ? 0 : -1;
+
+					case ParameterType.String:
+						return (string)template.Value == (string)Value ? 0 : -1;
+
+					default:
+						{
+							var t = (double)template.Value;
+							var v = (double)Value;
+							if (t < v) return -1;
+							if (t > v) return 1;
+							return 0;
+						}
+				}
+			}
+
+			return -1;
+		}
 	}
 
 
@@ -106,7 +132,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			// values should contain at least the required types
 			if (types.Length <= values.Count)
 			{
-				for (int i=0; i < types.Length; i++)
+				for (int i = 0; i < types.Length; i++)
 				{
 					// does each value match the required type in sequence
 					if (types[i] != values[i].Type)
@@ -124,7 +150,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			return values.ToArray();
 		}
 
-		public double[] ToDubleArray()
+		public double[] ToDoubleArray()
 		{
 			return values.Select(v => (double)v.Value).ToArray();
 		}
