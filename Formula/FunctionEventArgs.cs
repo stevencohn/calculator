@@ -5,7 +5,7 @@
  * Based on the C# Expression Evaluator by Jonathan Wood, 2010
  */
 
-namespace River.OneMoreAddIn.Commands.Formula
+namespace River.OneMoreAddIn.Commands.Tables.Formulas
 {
 	using System;
 	using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace River.OneMoreAddIn.Commands.Formula
 	{
 		public string Name { get; set; }
 
-		public List<double> Parameters { get; set; }
+		public FunctionParameters Parameters { get; set; }
 
 		public double Result { get; set; }
 

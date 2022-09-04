@@ -1,4 +1,4 @@
-﻿namespace TestEval
+﻿namespace CalculatorHarness
 {
 	partial class Form1
 	{

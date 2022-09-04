@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace TestEval
+namespace CalculatorHarness
 {
 	static class Program
 	{

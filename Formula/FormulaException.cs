@@ -9,9 +9,11 @@
 #pragma warning disable CA2237 // Mark ISerializable types with serializable
 #pragma warning disable S3871 // Exception types should be "public"
 
-namespace River.OneMoreAddIn.Commands.Formula
+namespace River.OneMoreAddIn.Commands.Tables.Formulas
 {
 	using System;
+	using Resx = CalculatorHarness.Properties.Resources;
+
 
 	/// <summary>
 	/// Custom exception for formula evaluation errors
@@ -23,8 +25,19 @@ namespace River.OneMoreAddIn.Commands.Formula
 		/// Constructor
 		/// </summary>
 		/// <param name="message">Message that describes this exception</param>
+		public FormulaException(string message)
+			: base(message)
+		{
+		}
+
+
+		/// <summary>
+		/// Constructor
+		/// </summary>
+		/// <param name="message">Message that describes this exception</param>
 		/// <param name="position">Position within expression where exception occurred</param>
-		public FormulaException(string message, int position) : base(message)
+		public FormulaException(string message, int position)
+			: base(message)
 		{
 			Column = position;
 		}
@@ -40,6 +53,6 @@ namespace River.OneMoreAddIn.Commands.Formula
 		/// Gets the message associated with this exception
 		/// </summary>
 		public override string Message =>
-			string.Format("{0} (column {1})", base.Message, Column + 1);
+			string.Format(Resx.FormulaCommand_Exception, base.Message, Column + 1);
 	}
 }

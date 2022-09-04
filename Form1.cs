@@ -11,11 +11,11 @@
 #pragma warning disable IDE1006 // Naming Styles
 #pragma warning disable CA1031 // Do not catch general exception types
 
-using River.OneMoreAddIn.Commands.Formula;
+using River.OneMoreAddIn.Commands.Tables.Formulas;
 using System;
 using System.Windows.Forms;
 
-namespace TestEval
+namespace CalculatorHarness
 {
 	internal partial class Form1 : Form
 	{
@@ -30,7 +30,7 @@ namespace TestEval
 			try
 			{
 				// Evaluate the current expression
-				var calculator = new Calculator();
+				var calculator = new River.OneMoreAddIn.Commands.Tables.Formulas.Calculator();
 				calculator.ProcessSymbol += ProcessSymbol;
 				calculator.ProcessFunction += ProcessFunction;
 				txtResult.Text = calculator.Execute(txtExpression.Text).ToString();
@@ -85,9 +85,14 @@ namespace TestEval
 			{
 				case "sum":
 					if (e.Parameters.Count == 2)
+					{
+						// this is a silly test
 						e.Result = Math.Min(e.Parameters[0], e.Parameters[1]);
+					}
 					else
+					{
 						e.Status = FunctionStatus.WrongParameterCount;
+					}
 					break;
 
 				default:

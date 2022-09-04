@@ -12,14 +12,14 @@
  * Copyright (c) 2010 Jonathan Wood
  */
 
-namespace River.OneMoreAddIn.Commands.Formula
+namespace River.OneMoreAddIn.Commands.Tables.Formulas
 {
 	using System;
 
 
 	internal class TextParser
 	{
-		public static char NullChar = (char)0;
+		public const char NullChar = (char)0;
 
 		public TextParser()
 		{
