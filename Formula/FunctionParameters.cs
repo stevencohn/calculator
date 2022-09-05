@@ -15,12 +15,20 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		String
 	}
 
+	internal enum ParameterOperator
+	{
+		GreaterThan,
+		LessThan,
+		NotEqual
+	}
+
 	/// <summary>
 	/// Boxy collection of things
 	/// </summary>
 	internal class FunctionParameter
 	{
 		public ParameterType Type { get; private set; }
+		public ParameterOperator Operator { get; private set; }
 		public object Value { get; private set; }
 		public FunctionParameter(object value)
 		{
@@ -77,7 +85,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	/// </summary>
 	internal class FunctionParameters
 	{
-		private readonly List<FunctionParameter> values;
+		protected readonly List<FunctionParameter> values;
 
 		public FunctionParameters()
 		{
@@ -125,6 +133,16 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		public string GetString(int i)
 		{
 			return (string)values[i].Value;
+		}
+
+		public FunctionParameter ItemAt(int index)
+		{
+			if (index >= 0 && index < values.Count)
+			{
+				return values[index];
+			}
+
+			throw new FormulaException("ItemAt index is out of range");
 		}
 
 		public FunctionParameters Match(params ParameterType[] types)

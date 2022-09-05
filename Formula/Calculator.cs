@@ -20,6 +20,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Text.RegularExpressions;
+	using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 	using Resx = CalculatorHarness.Properties.Resources;
 
 
@@ -77,7 +78,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		/// <returns></returns>
 		public double Execute(string expression)
 		{
-			return ExecuteTokens(TokenizeExpression(expression));
+			var x = TokenizeExpression(expression);
+			return ExecuteTokens(x);
 		}
 
 
@@ -188,8 +190,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				}
 				else
 				{
-					double result;
-
 					// Parse symbols and functions
 					if (state == State.Operand)
 					{
@@ -210,6 +210,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					// skip whitespace
 					parser.MovePastWhitespace();
 					// check for parameter list
+					FunctionParameter result;
 					if (parser.Peek() == '(')
 					{
 						// found parameter list, evaluate function
@@ -222,12 +223,13 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					}
 
 					// handle negative result
-					if (result < 0)
+					if (result.Type == ParameterType.Double && (double)result.Value < 0)
 					{
 						stack.Push(UnaryMinus);
-						result = Math.Abs(result);
+						result = new FunctionParameter(Math.Abs(Math.Floor((double)result.Value)));
 					}
-					tokens.Add(result.ToString());
+
+					tokens.Add(result.Value.ToString());
 					state = State.Operand;
 					continue;
 				}
@@ -293,7 +295,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		/// <param name="name">Name of function</param>
 		/// <param name="pos">Position at start of function</param>
 		/// <returns></returns>
-		private double EvaluateFunction(TextParser parser, string name, int pos)
+		private FunctionParameter EvaluateFunction(TextParser parser, string name, int pos)
 		{
 			// parse function parameters
 			var parameters = ParseParameters(parser);
@@ -301,7 +303,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			var Fn = MathFunctions.Find(name);
 			if (Fn != null)
 			{
-				return Fn(parameters);
+				return new FunctionParameter(Fn(parameters));
 			}
 
 			double result = default;
@@ -319,18 +321,16 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				};
 
 				ProcessFunction(this, args);
-
-				result = args.Result;
-				status = args.Status;
+				if (args.Status == FunctionStatus.OK)
+				{
+					return new FunctionParameter(args.Result);
+				}
 			}
-
-			if (status == FunctionStatus.UndefinedFunction)
-				throw new FormulaException(string.Format(ErrUndefinedFunction, name), pos);
 
 			if (status == FunctionStatus.WrongParameterCount)
 				throw new FormulaException(ErrWrongParamCount, pos);
 
-			return result;
+			throw new FormulaException(string.Format(ErrUndefinedFunction, name), pos);
 		}
 
 
@@ -434,9 +434,9 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				for (var row = int.Parse(row1); row <= int.Parse(row2); row++)
 				{
 					var value = EvaluateSymbol($"{col1}{row}", p1);
-					if (!double.IsNaN(value))
+					if (value.Type == ParameterType.Double)
 					{
-						values.Add(value);
+						values.Add((double)value.Value);
 					}
 				}
 			}
@@ -445,7 +445,15 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				// iterate columns in row
 				for (var col = CellLettersToIndex(col1); col <= CellLettersToIndex(col2); col++)
 				{
-					values.Add(EvaluateSymbol($"{CellIndexToLetters(col)}{row1}", p1));
+					var v = EvaluateSymbol($"{CellIndexToLetters(col)}{row1}", p1);
+					if (v.Type == ParameterType.Double)
+					{
+						values.Add((double)v.Value);
+					}
+					else
+					{
+						throw new FormulaException($"invalid parameter at cell {CellIndexToLetters(col)}{row1}");
+					}
 				}
 			}
 			else
@@ -514,23 +522,22 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		/// <param name="name">Name of symbol</param>
 		/// <param name="pos">Position at start of symbol</param>
 		/// <returns></returns>
-		private double EvaluateSymbol(string name, int pos)
+		private FunctionParameter EvaluateSymbol(string name, int pos)
 		{
 			// built-in symbols
 
 			if (string.Compare(name, "pi", true) == 0)
 			{
-				return Math.PI;
+				return new FunctionParameter(Math.PI);
 			}
 			else if (string.Compare(name, "e", true) == 0)
 			{
-				return Math.E;
+				return new FunctionParameter(Math.E);
 			}
 
 			double result = default;
 
 			// ask consumer to resolve symbol reference
-			var status = SymbolStatus.UndefinedSymbol;
 			if (ProcessSymbol != null)
 			{
 				var args = new SymbolEventArgs
@@ -541,18 +548,13 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				};
 
 				ProcessSymbol(this, args);
-
-				result = args.Result;
-				status = args.Status;
+				if (args.Status == SymbolStatus.OK)
+				{
+					return new FunctionParameter(args.Result);
+				}
 			}
 
-			if (status == SymbolStatus.UndefinedSymbol)
-				throw new FormulaException(string.Format(ErrUndefinedSymbol, name), pos);
-
-			if (status == SymbolStatus.None)
-				result = 0;
-
-			return result;
+			return new FunctionParameter(name);
 		}
 
 		/// <summary>

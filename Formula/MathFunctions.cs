@@ -97,10 +97,17 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			var a = array.Take(p.Count - 1).ToArray();
 			var last = array[array.Length - 1];
 
-			var op = ((string)last.Value)[0];
+			var op = last.Value.ToString()[0];
 
 			if ("<>!".Contains(op))
 			{
+
+
+
+				// TODO: this won't work - cast...
+
+
+
 				var test = new FunctionParameter(((string)last.Value).Substring(1));
 				if (test.Type != ParameterType.Double)
 				{
