@@ -240,10 +240,10 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					}
 
 					// handle negative result
-					if (result.Type == FormulaValueType.Double && (double)result.Value < 0)
+					if (result.Type == FormulaValueType.Double && result.DoubleValue < 0)
 					{
 						stack.Push(UnaryMinus);
-						result = new FormulaValue(Math.Abs(Math.Floor((double)result.Value)));
+						result = new FormulaValue(Math.Abs(Math.Floor(result.DoubleValue)));
 					}
 
 					tokens.Add(result.ToString());
@@ -457,7 +457,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					var value = EvaluateSymbol($"{col1}{row}", p1);
 					if (value.Type == FormulaValueType.Double)
 					{
-						values.Add((double)value.Value);
+						values.Add(value.DoubleValue);
 					}
 				}
 			}
@@ -469,7 +469,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					var v = EvaluateSymbol($"{CellIndexToLetters(col)}{row1}", p1);
 					if (v.Type == FormulaValueType.Double)
 					{
-						values.Add((double)v.Value);
+						values.Add(v.DoubleValue);
 					}
 					else
 					{
@@ -670,6 +670,10 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					var v1 = stack.Pop();
 					if (v1.Type == FormulaValueType.Double)
 						stack.Push(new FormulaValue(-v1.DoubleValue));
+				}
+				else if (bool.TryParse(token, out var b))
+				{
+					stack.Push(new FormulaValue(b));
 				}
 				else
 				{
