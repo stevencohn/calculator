@@ -97,18 +97,18 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			var values = array.Take(p.Count - 1).ToArray();
 			var test = array[array.Length - 1];
 
-			var oper = test.Value.ToString()[0];
+			var oper = test.ToString()[0];
 			var result = 0;
 			string s;
 			if (oper == '<' || oper == '>' || oper == '!')
 			{
-				s = test.Value.ToString().Substring(1);
+				s = test.ToString().Substring(1);
 				if (oper == '>') result = 1;
-				else if (oper == '<' || oper == '!') result = -1;
+				else if (oper == '<') result = -1;
 			}
 			else
 			{
-				s = test.Value.ToString();
+				s = test.ToString();
 			}
 
 			FormulaValue expected;
@@ -125,7 +125,9 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				expected = new FormulaValue(s);
 			}
 
-			return values.Count(v => v.CompareTo(expected) == result);
+			return oper == '!'
+				? values.Count(v => v.CompareTo(expected) != 0)
+				: values.Count(v => v.CompareTo(expected) == result);
 		}
 
 

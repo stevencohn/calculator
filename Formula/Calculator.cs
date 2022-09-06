@@ -80,10 +80,14 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			var result = ExecuteInternal(expression);
 			if (result.Type == FormulaValueType.Double)
 			{
-				return (double)result.Value;
+				return result.DoubleValue;
+			}
+			else if (result.Type == FormulaValueType.Boolean)
+			{
+				return (bool)result.Value ? 1 : 0;
 			}
 
-			throw new FormulaException($"return value ({result.Value}) is not a double");
+			throw new FormulaException($"expression cannot result in a string value");
 		}
 
 
@@ -242,7 +246,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 						result = new FormulaValue(Math.Abs(Math.Floor((double)result.Value)));
 					}
 
-					tokens.Add(result.Value.ToString());
+					tokens.Add(result.ToString());
 					state = State.Operand;
 					continue;
 				}
