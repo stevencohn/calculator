@@ -59,7 +59,7 @@
     <Compile Include="Formula\FormulaEnums.cs" />
     <Compile Include="Formula\FormulaException.cs" />
     <Compile Include="Formula\FunctionEventArgs.cs" />
-    <Compile Include="Formula\FunctionParameters.cs" />
+    <Compile Include="Formula\FormulaValues.cs" />
     <Compile Include="Formula\MathFunctions.cs" />
     <Compile Include="Formula\SymbolEventArgs.cs" />
     <Compile Include="Program.cs" />

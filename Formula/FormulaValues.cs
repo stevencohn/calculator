@@ -4,64 +4,73 @@
 
 namespace River.OneMoreAddIn.Commands.Tables.Formulas
 {
-	using System;
 	using System.Collections.Generic;
 	using System.Linq;
 
-	internal enum ParameterType
+
+	/// <summary>
+	/// Accepted types of values in a formula
+	/// </summary>
+	internal enum FormulaValueType
 	{
 		Boolean,
 		Double,
 		String
 	}
 
-	internal enum ParameterOperator
+
+	/// <summary>
+	/// Allowed operators in first character of a countif comparison
+	/// </summary>
+	internal enum CountIfOperator
 	{
 		GreaterThan,
 		LessThan,
 		NotEqual
 	}
 
+
 	/// <summary>
-	/// Boxy collection of things
+	/// Boxy formula value representing a double, string, or boolean value.
 	/// </summary>
-	internal class FunctionParameter
+	internal class FormulaValue
 	{
-		public ParameterType Type { get; private set; }
-		public ParameterOperator Operator { get; private set; }
+		public FormulaValueType Type { get; private set; }
+		public CountIfOperator Operator { get; private set; }
 		public object Value { get; private set; }
-		public FunctionParameter(object value)
+		public double DoubleValue { get => (double)Value; }
+		public FormulaValue(object value)
 		{
 			Value = value;
 			if (value is double)
 			{
-				Type = ParameterType.Double;
+				Type = FormulaValueType.Double;
 				return;
 			}
 			if (value is string)
 			{
-				Type = ParameterType.String;
+				Type = FormulaValueType.String;
 				return;
 			}
 			if (value is bool)
 			{
-				Type = ParameterType.Boolean;
+				Type = FormulaValueType.Boolean;
 				return;
 			}
 
 			throw new FormulaException($"{value} ({value.GetType()}) Must be bool, double, or string");
 		}
 
-		public int Compare(FunctionParameter template)
+		public int Compare(FormulaValue template)
 		{
 			if (template.Type == Type)
 			{
 				switch (template.Type)
 				{
-					case ParameterType.Boolean:
+					case FormulaValueType.Boolean:
 						return (bool)template.Value == (bool)Value ? 0 : -1;
 
-					case ParameterType.String:
+					case FormulaValueType.String:
 						return (string)template.Value == (string)Value ? 0 : -1;
 
 					default:
@@ -77,29 +86,33 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 
 			return -1;
 		}
+		public override string ToString()
+		{
+			return Value.ToString();
+		}
 	}
 
 
 	/// <summary>
-	/// Custom parameter: double, bool, or string
+	/// Collection of formula values
 	/// </summary>
-	internal class FunctionParameters
+	internal class FormulaValues
 	{
-		protected readonly List<FunctionParameter> values;
+		protected readonly List<FormulaValue> values;
 
-		public FunctionParameters()
+		public FormulaValues()
 		{
-			values = new List<FunctionParameter>();
+			values = new List<FormulaValue>();
 		}
 
 		public void Add(bool value)
 		{
-			values.Add(new FunctionParameter(value));
+			values.Add(new FormulaValue(value));
 		}
 
 		public void Add(double value)
 		{
-			values.Add(new FunctionParameter(value));
+			values.Add(new FormulaValue(value));
 		}
 
 		public void Add(double[] valueList)
@@ -110,9 +123,14 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			}
 		}
 
+		public void Add(FormulaValue other)
+		{
+			values.Add(other);
+		}
+
 		public void Add(string value)
 		{
-			values.Add(new FunctionParameter(value));
+			values.Add(new FormulaValue(value));
 		}
 
 		public int Count
@@ -135,7 +153,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			return (string)values[i].Value;
 		}
 
-		public FunctionParameter ItemAt(int index)
+		public FormulaValue ItemAt(int index)
 		{
 			if (index >= 0 && index < values.Count)
 			{
@@ -145,7 +163,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			throw new FormulaException("ItemAt index is out of range");
 		}
 
-		public FunctionParameters Match(params ParameterType[] types)
+		public FormulaValues Match(params FormulaValueType[] types)
 		{
 			// values should contain at least the required types
 			if (types.Length <= values.Count)
@@ -163,7 +181,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			return this;
 		}
 
-		public FunctionParameter[] ToArray()
+		public FormulaValue[] ToArray()
 		{
 			return values.ToArray();
 		}

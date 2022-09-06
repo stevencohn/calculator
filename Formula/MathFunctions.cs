@@ -11,7 +11,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	using System.Linq;
 
 
-	internal delegate double MathFunc(FunctionParameters args);
+	internal delegate double MathFunc(FormulaValues args);
 
 
 	internal class MathFunction
@@ -31,7 +31,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	internal static class MathFunctions
 	{
 		private static readonly List<MathFunction> functions = new List<MathFunction>();
-		private static readonly ParameterType D = ParameterType.Double;
+		private static readonly FormulaValueType D = FormulaValueType.Double;
 		//private static readonly ParameterType B = ParameterType.Boolean;
 		//private static readonly ParameterType S = ParameterType.String;
 
@@ -88,7 +88,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		}
 
 
-		private static double CountIf(FunctionParameters p)
+		private static double CountIf(FormulaValues p)
 		{
 			if (p.Count < 2)
 				throw new FormulaException($"countif requires at least two parameters");
@@ -99,7 +99,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 
 			var op = last.Value.ToString()[0];
 
-			if ("<>!".Contains(op))
+			if (op == '<' || op == '>' || op == '!')
 			{
 
 
@@ -108,8 +108,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 
 
 
-				var test = new FunctionParameter(((string)last.Value).Substring(1));
-				if (test.Type != ParameterType.Double)
+				var test = new FormulaValue(last.Value.ToString().Substring(1));
+				if (test.Type != FormulaValueType.Double)
 				{
 					throw new FormulaException($"countif test parameter has invalid operator");
 				}
