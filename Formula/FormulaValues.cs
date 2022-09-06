@@ -61,31 +61,26 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			throw new FormulaException($"{value} ({value.GetType()}) Must be bool, double, or string");
 		}
 
-		public int Compare(FormulaValue template)
+		public int CompareTo(FormulaValue template)
 		{
 			if (template.Type == Type)
 			{
 				switch (template.Type)
 				{
 					case FormulaValueType.Boolean:
-						return (bool)template.Value == (bool)Value ? 0 : -1;
+						return ((bool)Value).CompareTo((bool)template.Value);
 
 					case FormulaValueType.String:
-						return (string)template.Value == (string)Value ? 0 : -1;
+						return ((string)Value).CompareTo((string)template.Value);
 
 					default:
-						{
-							var t = (double)template.Value;
-							var v = (double)Value;
-							if (t < v) return -1;
-							if (t > v) return 1;
-							return 0;
-						}
+						return ((double)Value).CompareTo(template.DoubleValue);
 				}
 			}
 
 			return -1;
 		}
+
 		public override string ToString()
 		{
 			return Value.ToString();

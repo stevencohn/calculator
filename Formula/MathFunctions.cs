@@ -94,34 +94,38 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				throw new FormulaException($"countif requires at least two parameters");
 
 			var array = p.ToArray();
-			var a = array.Take(p.Count - 1).ToArray();
-			var last = array[array.Length - 1];
+			var values = array.Take(p.Count - 1).ToArray();
+			var test = array[array.Length - 1];
 
-			var op = last.Value.ToString()[0];
-
-			if (op == '<' || op == '>' || op == '!')
+			var oper = test.Value.ToString()[0];
+			var result = 0;
+			string s;
+			if (oper == '<' || oper == '>' || oper == '!')
 			{
-
-
-
-				// TODO: this won't work - cast...
-
-
-
-				var test = new FormulaValue(last.Value.ToString().Substring(1));
-				if (test.Type != FormulaValueType.Double)
-				{
-					throw new FormulaException($"countif test parameter has invalid operator");
-				}
-
-				var result = 0;
-				if (op == '>') result = 1;
-				else if (op == '<' || op == '!') result = -1;
-
-				return a.Count(v => v.Compare(test) == result);
+				s = test.Value.ToString().Substring(1);
+				if (oper == '>') result = 1;
+				else if (oper == '<' || oper == '!') result = -1;
+			}
+			else
+			{
+				s = test.Value.ToString();
 			}
 
-			return a.Count(v => v.Compare(last) == 0);
+			FormulaValue expected;
+			if (double.TryParse(s, out var d))
+			{
+				expected = new FormulaValue(d);
+			}
+			else if (bool.TryParse(s, out bool b))
+			{
+				expected = new FormulaValue(b);
+			}
+			else
+			{
+				expected = new FormulaValue(s);
+			}
+
+			return values.Count(v => v.CompareTo(expected) == result);
 		}
 
 

@@ -616,14 +616,13 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		private static FormulaValue ExecuteTokens(List<string> tokens)
 		{
 			var stack = new Stack<FormulaValue>();
-			var regex = new Regex(@"^[0-9]+(?:,[0-9]{3})*(?:\.[0-9]+)?$");
 
 			foreach (string token in tokens)
 			{
-				// Is this a value token?
-				if (regex.IsMatch(token))
+				// TryParse is more performance and complete than regex
+				if (double.TryParse(token, out var d))
 				{
-					stack.Push(new FormulaValue(double.Parse(token)));
+					stack.Push(new FormulaValue(d));
 				}
 				else if (token == "+")
 				{
