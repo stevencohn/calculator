@@ -32,8 +32,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	{
 		private static readonly List<MathFunction> functions = new List<MathFunction>();
 		private static readonly FormulaValueType D = FormulaValueType.Double;
-		//private static readonly ParameterType B = ParameterType.Boolean;
-		//private static readonly ParameterType S = ParameterType.String;
 
 		static MathFunctions()
 		{

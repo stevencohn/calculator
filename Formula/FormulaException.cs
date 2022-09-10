@@ -50,6 +50,12 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 
 
 		/// <summary>
+		/// Specifies the error message with the column suffix
+		/// </summary>
+		public string PlainMessage => base.Message;
+
+
+		/// <summary>
 		/// Gets the message associated with this exception
 		/// </summary>
 		public override string Message =>

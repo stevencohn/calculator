@@ -33,7 +33,7 @@
 			this.txtResult = new System.Windows.Forms.TextBox();
 			this.btnEvaluate = new System.Windows.Forms.Button();
 			this.btnClose = new System.Windows.Forms.Button();
-			this.txtExpression = new System.Windows.Forms.TextBox();
+			this.txtExpression = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -60,12 +60,14 @@
 			// 
 			// txtResult
 			// 
+			this.txtResult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.txtResult.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.txtResult.Location = new System.Drawing.Point(141, 60);
 			this.txtResult.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.txtResult.Name = "txtResult";
 			this.txtResult.ReadOnly = true;
-			this.txtResult.Size = new System.Drawing.Size(499, 30);
+			this.txtResult.Size = new System.Drawing.Size(618, 30);
 			this.txtResult.TabIndex = 3;
 			this.txtResult.TabStop = false;
 			// 
@@ -73,7 +75,7 @@
 			// 
 			this.btnEvaluate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnEvaluate.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnEvaluate.Location = new System.Drawing.Point(406, 114);
+			this.btnEvaluate.Location = new System.Drawing.Point(525, 129);
 			this.btnEvaluate.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnEvaluate.Name = "btnEvaluate";
 			this.btnEvaluate.Size = new System.Drawing.Size(112, 42);
@@ -87,7 +89,7 @@
 			this.btnClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.btnClose.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.btnClose.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnClose.Location = new System.Drawing.Point(528, 114);
+			this.btnClose.Location = new System.Drawing.Point(647, 129);
 			this.btnClose.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnClose.Name = "btnClose";
 			this.btnClose.Size = new System.Drawing.Size(112, 42);
@@ -98,13 +100,18 @@
 			// 
 			// txtExpression
 			// 
+			this.txtExpression.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.txtExpression.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.txtExpression.Location = new System.Drawing.Point(141, 20);
-			this.txtExpression.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.txtExpression.FormattingEnabled = true;
+			this.txtExpression.Items.AddRange(new object[] {
+            "round(pi * (abs(pow(-3, 2)) + sqrt(147 * (14 + 27))))",
+            "countif(a1:a2, 7)",
+            "countif(1,2,2,3,3,3,4,4,4,4, >2)"});
+			this.txtExpression.Location = new System.Drawing.Point(141, 24);
 			this.txtExpression.Name = "txtExpression";
-			this.txtExpression.Size = new System.Drawing.Size(499, 30);
-			this.txtExpression.TabIndex = 0;
-			this.txtExpression.Text = "round(pi * (abs(pow(-3, 2)) + sqrt(147 * (14 + 27))))";
+			this.txtExpression.Size = new System.Drawing.Size(618, 33);
+			this.txtExpression.TabIndex = 4;
 			// 
 			// Form1
 			// 
@@ -112,7 +119,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.btnClose;
-			this.ClientSize = new System.Drawing.Size(658, 178);
+			this.ClientSize = new System.Drawing.Size(777, 193);
 			this.Controls.Add(this.txtExpression);
 			this.Controls.Add(this.btnClose);
 			this.Controls.Add(this.btnEvaluate);
@@ -137,7 +144,7 @@
 		private System.Windows.Forms.TextBox txtResult;
 		private System.Windows.Forms.Button btnEvaluate;
 		private System.Windows.Forms.Button btnClose;
-		private System.Windows.Forms.TextBox txtExpression;
+		private System.Windows.Forms.ComboBox txtExpression;
 	}
 }
 

@@ -39,26 +39,25 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		public CountIfOperator Operator { get; private set; }
 		public object Value { get; private set; }
 		public double DoubleValue { get => (double)Value; }
-		public FormulaValue(object value)
+		public FormulaValue(bool value)
 		{
 			Value = value;
-			if (value is double)
-			{
-				Type = FormulaValueType.Double;
-				return;
-			}
-			if (value is string)
-			{
-				Type = FormulaValueType.String;
-				return;
-			}
-			if (value is bool)
-			{
-				Type = FormulaValueType.Boolean;
-				return;
-			}
-
-			throw new FormulaException($"{value} ({value.GetType()}) Must be bool, double, or string");
+			Type = FormulaValueType.Boolean;
+		}
+		public FormulaValue(double value)
+		{
+			Value = value;
+			Type = FormulaValueType.Double;
+		}
+		public FormulaValue(int value)
+		{
+			Value = (double)value;
+			Type = FormulaValueType.Double;
+		}
+		public FormulaValue(string value)
+		{
+			Value = value;
+			Type = FormulaValueType.String;
 		}
 
 		public int CompareTo(FormulaValue template)

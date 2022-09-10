@@ -291,7 +291,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		}
 
 		/// <summary>
-		/// Parses and extracts a symbol at the current position
+		/// Parses and extracts a symbol at the current position comprised of valid name
+		/// characters.
 		/// </summary>
 		/// <param name="parser">TextParser object</param>
 		/// <returns></returns>
@@ -304,7 +305,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 				parser.MoveAhead();
 				c = parser.Peek();
 			}
-			return parser.Extract(start, parser.Position);
+			var token = parser.Extract(start, parser.Position);
+			return token;
 		}
 
 
@@ -365,67 +367,154 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		/// <returns></returns>
 		private FormulaValues ParseParameters(TextParser parser)
 		{
-			// Move past open parenthesis
-			parser.MoveAhead();
-
-			// Look for function parameters
 			var parameters = new FormulaValues();
+
+			// move past open parenthesis
+			parser.MoveAhead();
 			parser.MovePastWhitespace();
-			if (parser.Peek() != ')')
+
+			// empty param list
+			if (parser.Peek() == ')')
 			{
-				// Parse function parameter list
-				int paramStart = parser.Position;
-				int pardepth = 1;
+				parser.MoveAhead();
+				return parameters;
+			}
 
-				while (!parser.EndOfText)
+			// collect parameters...
+
+
+			// Parse function parameter list
+			int start = parser.Position;
+			int depth = 1;
+			bool key = false;
+
+			while (!parser.EndOfText)
+			{
+				var next = parser.Peek();
+				if (next == ':')
 				{
-					if (parser.Peek() == ':')
-					{
-						// assume current token and next token are cell references
-						var p1 = parser.Position;
-						var cell1 = parser.Extract(paramStart, parser.Position);
-						parser.MoveAhead();
-						var p2 = parser.Position;
-						var cell2 = ParseSymbolToken(parser);
-						paramStart = parser.Position;
-						parameters.Add(EvaluateCellReferences(cell1, cell2, p1, p2).ToArray());
-					}
-					else if (parser.Peek() == ',')
-					{
-						// Note: Ignore commas inside parentheses. They could be
-						// from a parameter list for a function inside the parameters
-						if (pardepth == 1)
-						{
-							parameters.Add(EvaluateParameter(parser, paramStart));
-							paramStart = parser.Position + 1;
-						}
-					}
-
-					if (parser.Peek() == ')')
-					{
-						pardepth--;
-						if (pardepth == 0)
-						{
-							if (paramStart < parser.Position)
-							{
-								parameters.Add(EvaluateParameter(parser, paramStart));
-							}
-							break;
-						}
-					}
-					else if (parser.Peek() == '(')
-					{
-						pardepth++;
-					}
+					// assume current token and next token are cell references
+					var p1 = parser.Position;
+					var cell1 = parser.Extract(start, parser.Position);
 					parser.MoveAhead();
+					var p2 = parser.Position;
+					var cell2 = ParseSymbolToken(parser);
+					start = parser.Position;
+					parameters.Add(EvaluateCellReferences(cell1, cell2, p1, p2).ToArray());
+					key = true;
+				}
+				else if (next == ',')
+				{
+					// Note: Ignore commas inside parentheses. They could be
+					// from a parameter list for a function inside the parameters
+					if (depth == 1)
+					{
+						// evaluate the string prior to the comma
+						parameters.Add(EvaluateParameter(parser, start));
+						start = parser.Position + 1;
+					}
+					key = true;
+				}
+				else //if (next == '>' || next == '<' || next == '!')
+				{
+					//parameters.Add(ParseSymbolToken(parser));
+					if (key)
+					{
+						//start = parser.Position;
+						key = false;
+					}
+				}
+
+				next = parser.Peek();
+				if (next == ')')
+				{
+					depth--;
+					if (depth == 0)
+					{
+						if (start < parser.Position)
+						{
+							if (parser.PeekAt(start) == ',')
+							{
+								start++;
+							}
+
+							parameters.Add(EvaluateParameter(parser, start));
+						}
+						break;
+					}
+				}
+				else if (next == '(')
+				{
+					depth++;
+				}
+
+				parser.MoveAhead();
+			}
+
+
+			/*
+			// parse function parameter list
+			int start = parser.Position;
+			int depth = 1;
+
+			for (; !parser.EndOfText; parser.MoveAhead())
+			{
+				var next = parser.Peek();
+				if (next == '(')
+				{
+					depth++;
+				}
+				else if (next == ')')
+				{
+					if (--depth == 0)
+					{
+						if (start < parser.Position)
+						{
+							parameters.Add(EvaluateParameter(parser, start));
+						}
+						break;
+					}
+				}
+				else if (next == ':')
+				{
+					// assume current token and next token are cell references
+					var p1 = parser.Position;
+					var cell1 = parser.Extract(start, parser.Position);
+					parser.MoveAhead();
+					var p2 = parser.Position;
+					var cell2 = ParseSymbolToken(parser);
+					start = parser.Position;
+					parameters.Add(EvaluateCellReferences(cell1, cell2, p1, p2).ToArray());
+				}
+				else if (next == ',')
+				{
+					// Note: Ignore commas inside parentheses. They could be
+					// from a parameter list for a function inside the parameters
+					if (depth == 1)
+					{
+						parameters.Add(EvaluateParameter(parser, start));
+						start = parser.Position + 1;
+					}
+				}
+				else if (next == '>' || next == '<' || next == '!')
+				{
+					parameters.Add(ParseSymbolToken(parser));
+					start = parser.Position;
+				}
+
+				if (parser.Peek() == ')')
+				{
+					parser.MoveAhead(-1);
 				}
 			}
-			// Make sure we found a closing parenthesis
-			if (parser.Peek() != ')')
+			*/
+
+			// make sure we found a closing parenthesis
+			if (depth > 0)
 				throw new FormulaException(ErrClosingParenExpected, parser.Position);
-			// Move past closing parenthesis
+
+			// move past closing parenthesis
 			parser.MoveAhead();
-			// Return parameter list
 			return parameters;
 		}
 
@@ -523,17 +612,19 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		/// <returns></returns>
 		private FormulaValue EvaluateParameter(TextParser parser, int paramStart)
 		{
+			string expression = string.Empty;
 			try
 			{
 				// Extract expression and evaluate it
-				string expression = parser.Extract(paramStart, parser.Position);
+				expression = parser.Extract(paramStart, parser.Position).Trim();
 				return ExecuteInternal(expression);
 			}
 			catch (FormulaException ex)
 			{
 				// Adjust column and rethrow exception
-				ex.Column += paramStart;
-				throw;
+				throw new FormulaException(
+					$"{ex.PlainMessage}\n\"{expression}\"\n",
+					ex.Column + paramStart);
 			}
 		}
 

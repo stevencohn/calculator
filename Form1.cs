@@ -22,6 +22,8 @@ namespace CalculatorHarness
 		public Form1()
 		{
 			InitializeComponent();
+
+			txtExpression.SelectedIndex = 0;
 			txtExpression.Focus();
 		}
 
