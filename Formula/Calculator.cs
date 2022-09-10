@@ -386,7 +386,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 			// Parse function parameter list
 			int start = parser.Position;
 			int depth = 1;
-			bool key = false;
 
 			while (!parser.EndOfText)
 			{
@@ -401,7 +400,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 					var cell2 = ParseSymbolToken(parser);
 					start = parser.Position;
 					parameters.Add(EvaluateCellReferences(cell1, cell2, p1, p2).ToArray());
-					key = true;
 				}
 				else if (next == ',')
 				{
@@ -412,16 +410,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 						// evaluate the string prior to the comma
 						parameters.Add(EvaluateParameter(parser, start));
 						start = parser.Position + 1;
-					}
-					key = true;
-				}
-				else //if (next == '>' || next == '<' || next == '!')
-				{
-					//parameters.Add(ParseSymbolToken(parser));
-					if (key)
-					{
-						//start = parser.Position;
-						key = false;
 					}
 				}
 
@@ -450,64 +438,6 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 
 				parser.MoveAhead();
 			}
-
-
-			/*
-			// parse function parameter list
-			int start = parser.Position;
-			int depth = 1;
-
-			for (; !parser.EndOfText; parser.MoveAhead())
-			{
-				var next = parser.Peek();
-				if (next == '(')
-				{
-					depth++;
-				}
-				else if (next == ')')
-				{
-					if (--depth == 0)
-					{
-						if (start < parser.Position)
-						{
-							parameters.Add(EvaluateParameter(parser, start));
-						}
-						break;
-					}
-				}
-				else if (next == ':')
-				{
-					// assume current token and next token are cell references
-					var p1 = parser.Position;
-					var cell1 = parser.Extract(start, parser.Position);
-					parser.MoveAhead();
-					var p2 = parser.Position;
-					var cell2 = ParseSymbolToken(parser);
-					start = parser.Position;
-					parameters.Add(EvaluateCellReferences(cell1, cell2, p1, p2).ToArray());
-				}
-				else if (next == ',')
-				{
-					// Note: Ignore commas inside parentheses. They could be
-					// from a parameter list for a function inside the parameters
-					if (depth == 1)
-					{
-						parameters.Add(EvaluateParameter(parser, start));
-						start = parser.Position + 1;
-					}
-				}
-				else if (next == '>' || next == '<' || next == '!')
-				{
-					parameters.Add(ParseSymbolToken(parser));
-					start = parser.Position;
-				}
-
-				if (parser.Peek() == ')')
-				{
-					parser.MoveAhead(-1);
-				}
-			}
-			*/
 
 			// make sure we found a closing parenthesis
 			if (depth > 0)
