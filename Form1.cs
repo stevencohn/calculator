@@ -9,7 +9,6 @@
 //
 
 #pragma warning disable IDE1006 // Naming Styles
-#pragma warning disable CA1031 // Do not catch general exception types
 
 using River.OneMoreAddIn.Commands.Tables.Formulas;
 using System;
@@ -32,7 +31,7 @@ namespace CalculatorHarness
 			try
 			{
 				// Evaluate the current expression
-				var calculator = new River.OneMoreAddIn.Commands.Tables.Formulas.Calculator();
+				var calculator = new Calculator();
 				calculator.ProcessSymbol += ProcessSymbol;
 				calculator.ProcessFunction += ProcessFunction;
 				txtResult.Text = calculator.Execute(txtExpression.Text).ToString();
@@ -62,15 +61,23 @@ namespace CalculatorHarness
 			switch (e.Name.ToLower())
 			{
 				case "a1":
-					e.Result = 7.0;
+					e.SetResult(7.0);
 					break;
 
 				case "a2":
-					e.Result = 17;
+					e.SetResult(17);
 					break;
 
 				case "a3":
-					e.Result = double.NaN;
+					e.SetResult("abc");
+					break;
+
+				case "a4":
+					e.SetResult(true);
+					break;
+
+				case "a5":
+					e.SetResult(double.NaN);
 					e.Status = SymbolStatus.None;
 					break;
 

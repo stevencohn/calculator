@@ -15,7 +15,8 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 	{
 		Boolean,
 		Double,
-		String
+		String,
+		Unknown
 	}
 
 
@@ -39,6 +40,7 @@ namespace River.OneMoreAddIn.Commands.Tables.Formulas
 		public CountIfOperator Operator { get; private set; }
 		public object Value { get; private set; }
 		public double DoubleValue { get => (double)Value; }
+
 		public FormulaValue(bool value)
 		{
 			Value = value;
